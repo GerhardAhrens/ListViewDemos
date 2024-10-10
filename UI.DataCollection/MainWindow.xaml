@@ -1,0 +1,323 @@
+﻿<Window
+    x:Class="UI.DataCollection.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:libConverter="clr-namespace:EasyPrototypingNET.WPF.Converter;assembly=EasyPrototypingNET"
+    xmlns:localConverter="clr-namespace:UI.DataCollection.XAMLConverter"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wpfLib="clr-namespace:EasyPrototypingNET.WPF;assembly=EasyPrototypingNET"
+    Title="MainWindow"
+    Width="800"
+    Height="450"
+    wpfLib:ActionDialogClosing.RaiseClosingHandler="True"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <libConverter:RowNumberConverter x:Key="rowNumberConverter" />
+        <localConverter:SymbolConverter x:Key="SymbolConverter" />
+
+        <DataTemplate x:Key="OrangeHeaderTemplate">
+            <DockPanel>
+                <TextBlock
+                    FontSize="12"
+                    FontWeight="Medium"
+                    Foreground="Orange">
+                    <TextBlock.Text>
+                        <Binding />
+                    </TextBlock.Text>
+                </TextBlock>
+            </DockPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <wpfLib:SimpleGrid
+        Columns="*"
+        GridLineBrush="Blue"
+        GridLinesShow="True"
+        Rows="30,*,30">
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="5,0"
+            Orientation="Horizontal">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Text="Filter:" />
+
+            <wpfLib:TextBoxEx
+                Width="200"
+                Margin="5,0"
+                HorizontalAlignment="Left"
+                Text="{Binding Path=FilterDefaultSearch, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+
+        <!--#region ListView Definition-->
+        <ListView
+            Name="lvwMain"
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            wpfLib:ListViewSort.AutoSort="True"
+            Background="WhiteSmoke"
+            ItemContainerStyle="{StaticResource ResourceKey=lvwItemContainerStyle}"
+            ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}"
+            ScrollViewer.IsDeferredScrollingEnabled="False"
+            SelectedItem="{Binding Path=CurrentSelectedItem, UpdateSourceTrigger=PropertyChanged}"
+            SelectionMode="Extended"
+            Style="{StaticResource ResourceKey=lvwMainStyle}">
+
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:InvokeCommandAction Command="{Binding Path=DataContext.CmdAgg[EditEntryCommand], RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=lvwMain, Path=SelectedItem}" />
+                </i:EventTrigger>
+
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding Path=DataContext.CmdAgg[SelectionChangedCommand], RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=lvwMain, Path=SelectedItems}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+
+            <ListView.InputBindings>
+                <KeyBinding
+                    Key="Enter"
+                    Command="{Binding Path=DataContext.CmdAgg[EditEntryCommand], RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                    CommandParameter="{Binding ElementName=lvwMain, Path=SelectedItem}" />
+            </ListView.InputBindings>
+
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem
+                        Command="{Binding Path=CmdAgg[ContextMenuCommand]}"
+                        CommandParameter="A"
+                        Header="Context A">
+                        <MenuItem.Icon>
+                            <Viewbox>
+                                <Path
+                                    Data="{StaticResource ResourceKey=OpenSolution}"
+                                    Fill="Black"
+                                    Stretch="Uniform" />
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <Separator />
+
+                    <MenuItem
+                        Command="{Binding Path=CmdAgg[ContextMenuCommand]}"
+                        CommandParameter="B"
+                        Header="Context B">
+                        <MenuItem.Icon>
+                            <Viewbox>
+                                <Path
+                                    Data="{StaticResource ResourceKey=Home-Icon}"
+                                    Fill="Black"
+                                    Stretch="Uniform" />
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+
+            <ListView.View>
+                <GridView
+                    AllowsColumnReorder="True"
+                    ColumnHeaderToolTip="Spaltenkopf">
+                    <!--  Add a ContextMenu to GridView Header  -->
+                    <GridView.ColumnHeaderContextMenu>
+                        <ContextMenu>
+                            <MenuItem
+                                x:Name="ctxSortAbsteigend"
+                                Click="ctxSortAbsteigend_Click"
+                                Header="Absteigend" />
+                            <MenuItem
+                                x:Name="ctxSortAufsteigend"
+                                Click="ctxSortAufsteigend_Click"
+                                Header="Aufsteigend" />
+                        </ContextMenu>
+                    </GridView.ColumnHeaderContextMenu>
+
+                    <!--  Add GridVeiw Columns  -->
+                    <GridViewColumn Width="35">
+                        <GridViewColumn.Header>
+                            <Grid>
+                                <wpfLib:ButtonEx
+                                    Width="25"
+                                    Height="25"
+                                    Command="{Binding Path=CmdAgg[ClearFilterCommand]}"
+                                    Content="X"
+                                    FontSize="18"
+                                    KeyboardNavigation.IsTabStop="False"
+                                    ToolTip="Filter löschen (or Ctrl-D)" />
+                            </Grid>
+                        </GridViewColumn.Header>
+
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Transparent" BorderThickness="0">
+                                    <Grid Margin="2">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontWeight="Bold"
+                                            Foreground="Gray"
+                                            TextAlignment="Right">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource rowNumberConverter}">
+                                                    <Binding />
+                                                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ListView}}" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="60"
+                        wpfLib:ListViewSort.PropertyName="[IsSelected]"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumnHeader AllowDrop="False">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="35" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <wpfLib:CheckBoxEx
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsChecked="{Binding Path=AllItemsChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Foreground="Black"
+                                    Text="{Binding Path=SelectedCheckBoxHeader, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                            </Grid>
+                        </GridViewColumnHeader>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <wpfLib:CheckBoxEx IsChecked="{Binding Path=[IsSelected], UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Checked">
+                                            <i:InvokeCommandAction Command="{Binding Path=DataContext.CmdAgg[CheckBoxCheckedCommand], RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=lvwMain, Path=SelectedItems}" />
+                                        </i:EventTrigger>
+
+                                        <i:EventTrigger EventName="Unchecked">
+                                            <i:InvokeCommandAction Command="{Binding Path=DataContext.CmdAgg[CheckBoxCheckedCommand], RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=lvwMain, Path=SelectedItems}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </wpfLib:CheckBoxEx>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="50"
+                        Header="Symbol"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border>
+                                    <Path
+                                        VerticalAlignment="Center"
+                                        Data="{Binding Path=[Symbol], Converter={StaticResource ResourceKey=SymbolConverter}, ConverterParameter={x:Reference Name=lvwMain}}"
+                                        Fill="{Binding Path=[SymbolColor]}"
+                                        Stretch="Uniform" />
+                                </Border>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="150"
+                        wpfLib:ListViewSort.PropertyName="[TextA]"
+                        Header="TextA"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Background="AliceBlue"
+                                    FontWeight="Normal"
+                                    Text="{Binding Path=[TextA]}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="150"
+                        wpfLib:ListViewSort.PropertyName="[TextB]"
+                        Header="TextB"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock FontWeight="Normal" Text="{Binding Path=[TextB]}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        x:Name="colZahlen"
+                        Width="100"
+                        wpfLib:ListViewSort.PropertyName="[Zahlen]"
+                        Header="Zahlen"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    x:Name="tbZahlen"
+                                    HorizontalAlignment="Right"
+                                    FontWeight="Normal"
+                                    Text="{Binding Path=[Zahlen]}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="120"
+                        wpfLib:ListViewSort.PropertyName="[Datum]"
+                        Header="Datum"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock FontWeight="Normal" Text="{Binding Path=[Datum]}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        Width="80"
+                        wpfLib:ListViewSort.PropertyName="[BoolValue]"
+                        Header="Bool-Value"
+                        HeaderContainerStyle="{StaticResource lvwHeaderLeft}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <wpfLib:CheckBoxEx IsChecked="{Binding Path=[BoolValue]}" IsHitTestVisible="False" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            Text="{Binding Path=SelectedRowHeader, UpdateSourceTrigger=PropertyChanged}" />
+
+    </wpfLib:SimpleGrid>
+</Window>
