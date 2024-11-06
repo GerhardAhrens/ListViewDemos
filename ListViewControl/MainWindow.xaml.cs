@@ -1,6 +1,8 @@
-﻿namespace UI.DataCollection
+﻿namespace ListViewControl
 {
     using System.Windows;
+
+    using ListViewControl.ViewModel;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -19,16 +21,6 @@
             }
 
             this.DataContext = this.rootVM;
-        }
-
-        private void ctxSortAbsteigend_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void ctxSortAufsteigend_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
