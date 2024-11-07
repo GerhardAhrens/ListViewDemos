@@ -23,16 +23,20 @@
 
     <Grid>
         <!--#region ListView Definition-->
-        <ctrl:ListViewEx ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}" SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
+        <ctrl:ListViewEx
+            ctrl:ListViewSort.AutoSort="True"
+            ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}"
+            SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
             <ListView.View>
                 <GridView AllowsColumnReorder="True">
-                    <GridViewColumn Width="150" DisplayMemberBinding="{Binding Path=[TextA]}">
-                        <GridViewColumn.Header>
-                            <ctrl:SortableGridViewColumnHeader
-                                Content="TextA"
-                                SortPropertyName="TextA"
-                                Tag="TextA" />
-                        </GridViewColumn.Header>
+                    <GridViewColumn
+                        Width="150"
+                        ctrl:ListViewSort.PropertyName="[TextA]"
+                        DisplayMemberBinding="{Binding Path=[TextA]}">
+                        <ctrl:GridViewColumnHeaderEx
+                            Height="30"
+                            HorizontalContentAlignment="Left"
+                            Content="TextA" />
                     </GridViewColumn>
                 </GridView>
             </ListView.View>

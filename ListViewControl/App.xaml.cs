@@ -27,8 +27,9 @@
 
             List<DemoModel> demoModels = new DemoData().BuildData();
             DataTable demoModelDT = demoModels.ToGetDataTable();
-            */
-            VersionChanger(new string[] { "$(ProjectDir)|1.yyyy.MMdd.*" });
+
+                         VersionChanger(new string[] { "$(ProjectDir)|1.yyyy.MMdd.*" });
+        */
         }
 
         private int VersionChanger(string[] args)
@@ -77,7 +78,7 @@
             return 0;
         }
     }
-    
+
 
     public enum Status : int
     {

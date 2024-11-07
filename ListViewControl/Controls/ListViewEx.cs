@@ -95,240 +95,316 @@
         }
     }
 
-    public class SortableGridViewColumnHeader : GridViewColumnHeader
+    public class ListViewSort
     {
-        #region Dependency Properties
-
-        /// <summary>
-        /// The column sort direction, this property is read-only.
-        /// </summary>
-        public ListSortDirection? SortDirection
-        {
-            get => (ListSortDirection?)GetValue(SortDirectionProperty);
-            protected set => SetValue(SortDirectionPropertyKey, value);
-        }
-
-
-        private static readonly DependencyPropertyKey SortDirectionPropertyKey =
-            DependencyProperty.RegisterReadOnly("SortDirection",
-                                                typeof(ListSortDirection?),
-                                                typeof(SortableGridViewColumnHeader),
-                                                new PropertyMetadata(null));
-
-        public static readonly DependencyProperty SortDirectionProperty = SortDirectionPropertyKey.DependencyProperty;
-
-        /// <summary>
-        /// The property name to sort.
-        /// </summary>
-        public string SortPropertyName
-        {
-            get => (string)GetValue(SortPropertyNameProperty);
-            set => SetValue(SortPropertyNameProperty, value);
-        }
-
-        // Using a DependencyProperty as the backing store for SortPropertyName. This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SortPropertyNameProperty =
-            DependencyProperty.Register("SortPropertyName",
-                                        typeof(string),
-                                        typeof(SortableGridViewColumnHeader),
-                                        new PropertyMetadata(null));
-        #endregion
-
-        /// <summary>
-        /// Create a new Instance of SortableGridViewColumnHeader.
-        /// </summary>
-        public SortableGridViewColumnHeader() : base()
-        {
-            AddHandler(ClickEvent, new RoutedEventHandler(SortableGridViewColumnHeader_Click));
-        }
-
-        /// <summary>
-        /// Attach an event handler to monitor when the SortDescriptionCollection changes.
-        /// </summary>
-        /// <param name="oldParent"></param>
-        protected override void OnVisualParentChanged(DependencyObject oldParent)
-        {
-            base.OnVisualParentChanged(oldParent);
-
-            if (GetAncestor<ListView>(this) is ListView listView)
-            {
-                ((INotifyCollectionChanged)listView.Items.SortDescriptions).CollectionChanged += SortDescriptions_CollectionChanged;
-            }
-        }
-
-        /// <summary>
-        /// Attach MouseLeftButton Event Handler to Thumb.
-        /// </summary>
-        public override void OnApplyTemplate()
-        {
-            base.OnApplyTemplate();
-
-            foreach (Thumb thumb in FindVisualChildren<Thumb>(this))
-            {
-                thumb.AddHandler(MouseLeftButtonDownEvent, new RoutedEventHandler(Thumb_DragStarted), true);
-                thumb.AddHandler(MouseLeftButtonUpEvent, new RoutedEventHandler(Thumb_DragCompleted), true);
-            }
-        }
-
-        /// <summary>
-        /// Sort the collection view using SortDescriptions.
-        /// </summary>
-        /// <param name="view">ICollectionView to Sort</param>
-        /// <param name="append">If true, the SortDescriptions collection will not be cleared.</param>
-        private void Sort(ICollectionView view, bool append)
-        {
-            ListSortDirection direction = ListSortDirection.Ascending;
-            List<SortDescription> removeList = new List<SortDescription>();
-            bool sortExists = false;
-
-            for (int i = 0; i < view.SortDescriptions.Count; i++)
-            {
-                SortDescription description = view.SortDescriptions[i];
-                if (description.PropertyName == SortPropertyName)
-                {
-                    direction = (description.Direction == ListSortDirection.Ascending) ?
-                        ListSortDirection.Descending : ListSortDirection.Ascending;
-
-                    // The following replace statement does *not* raise NotifyCollectionChangedAction.Replace.
-                    // When using MaterialDesign ListSortDirectionIndicator, the sort arrow will disappear/reappear 
-                    // instead of transitioning to the opposite arrow.
-                    // A workaround for this is to detach the event handler and to reattach after replacing the element.
-                    ((INotifyCollectionChanged)view.SortDescriptions).CollectionChanged -= SortDescriptions_CollectionChanged;
-                    view.SortDescriptions[i] = new SortDescription(SortPropertyName, direction);
-                    SortDirection = direction;
-                    ((INotifyCollectionChanged)view.SortDescriptions).CollectionChanged += SortDescriptions_CollectionChanged;
-
-                    sortExists = true;
-                }
-                else
-                {
-                    if (!append)
+        public static readonly DependencyProperty CommandProperty = DependencyProperty.RegisterAttached(
+                "Command", typeof(ICommand), typeof(ListViewSort),
+                new UIPropertyMetadata(
+                    null,
+                    (o, e) =>
                     {
-                        removeList.Add(description);
+                        ItemsControl listView = o as ItemsControl;
+                        if (listView != null)
+                        {
+                            if (!GetAutoSort(listView)) // Don't change click handler if AutoSort enabled
+                            {
+                                if (e.OldValue != null && e.NewValue == null)
+                                {
+                                    listView.RemoveHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ColumnHeader_Click));
+                                }
+                                if (e.OldValue == null && e.NewValue != null)
+                                {
+                                    listView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ColumnHeader_Click));
+                                }
+                            }
+                        }
+                    }
+                ));
+
+        public static readonly DependencyProperty AutoSortProperty = DependencyProperty.RegisterAttached(
+        "AutoSort", typeof(bool), typeof(ListViewSort),
+        new UIPropertyMetadata(
+            false,
+            (o, e) =>
+            {
+                ListView listView = o as ListView;
+                if (listView != null)
+                {
+                    if (GetCommand(listView) == null) // Don't change click handler if a command is set
+                    {
+                        bool oldValue = (bool)e.OldValue;
+                        bool newValue = (bool)e.NewValue;
+                        if (oldValue && !newValue)
+                        {
+                            listView.RemoveHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ColumnHeader_Click));
+                        }
+                        if (!oldValue && newValue)
+                        {
+                            listView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ColumnHeader_Click));
+                        }
                     }
                 }
             }
+        ));
 
-            foreach (SortDescription desc in removeList)
-            {
-                view.SortDescriptions.Remove(desc);
-            }
+        public static readonly DependencyProperty PropertyNameProperty =
+            DependencyProperty.RegisterAttached(
+                "PropertyName", typeof(string), typeof(ListViewSort), new UIPropertyMetadata(null));
 
-            if (!sortExists)
-            {
-                view.SortDescriptions.Add(new SortDescription(SortPropertyName, direction));
-            }
+        public static readonly DependencyProperty ShowSortGlyphProperty =
+            DependencyProperty.RegisterAttached("ShowSortGlyph", typeof(bool), typeof(ListViewSort), new UIPropertyMetadata(true));
+
+        public static readonly DependencyProperty SortGlyphAscendingProperty =
+            DependencyProperty.RegisterAttached("SortGlyphAscending", typeof(ImageSource), typeof(ListViewSort), new UIPropertyMetadata(null));
+
+        public static readonly DependencyProperty SortGlyphDescendingProperty =
+            DependencyProperty.RegisterAttached("SortGlyphDescending", typeof(ImageSource), typeof(ListViewSort), new UIPropertyMetadata(null));
+
+        private static readonly DependencyProperty SortedColumnHeaderProperty =
+            DependencyProperty.RegisterAttached("SortedColumnHeader", typeof(GridViewColumnHeader), typeof(ListViewSort), new UIPropertyMetadata(null));
+
+        public static ICommand GetCommand(DependencyObject obj)
+        {
+            return (ICommand)obj.GetValue(CommandProperty);
         }
 
-        #region Events
-
-        /// <summary>
-        /// Update SortDirection based on the addition or removal its SortDescription.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SortDescriptions_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public static void SetCommand(DependencyObject obj, ICommand value)
         {
-            switch (e.Action)
+            obj.SetValue(CommandProperty, value);
+        }
+
+
+        public static bool GetAutoSort(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(AutoSortProperty);
+        }
+
+        public static void SetAutoSort(DependencyObject obj, bool value)
+        {
+            obj.SetValue(AutoSortProperty, value);
+        }
+
+
+        public static string GetPropertyName(DependencyObject obj)
+        {
+            return (string)obj.GetValue(PropertyNameProperty);
+        }
+
+        public static void SetPropertyName(DependencyObject obj, string value)
+        {
+            obj.SetValue(PropertyNameProperty, value);
+        }
+
+        public static bool GetShowSortGlyph(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(ShowSortGlyphProperty);
+        }
+
+        public static void SetShowSortGlyph(DependencyObject obj, bool value)
+        {
+            obj.SetValue(ShowSortGlyphProperty, value);
+        }
+
+        public static ImageSource GetSortGlyphAscending(DependencyObject obj)
+        {
+            return (ImageSource)obj.GetValue(SortGlyphAscendingProperty);
+        }
+
+        public static void SetSortGlyphAscending(DependencyObject obj, ImageSource value)
+        {
+            obj.SetValue(SortGlyphAscendingProperty, value);
+        }
+
+        public static ImageSource GetSortGlyphDescending(DependencyObject obj)
+        {
+            return (ImageSource)obj.GetValue(SortGlyphDescendingProperty);
+        }
+
+        public static void SetSortGlyphDescending(DependencyObject obj, ImageSource value)
+        {
+            obj.SetValue(SortGlyphDescendingProperty, value);
+        }
+
+        private static GridViewColumnHeader GetSortedColumnHeader(DependencyObject obj)
+        {
+            return (GridViewColumnHeader)obj.GetValue(SortedColumnHeaderProperty);
+        }
+
+        private static void SetSortedColumnHeader(DependencyObject obj, GridViewColumnHeader value)
+        {
+            obj.SetValue(SortedColumnHeaderProperty, value);
+        }
+
+        private static void ColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
+            if (headerClicked != null && headerClicked.Column != null)
             {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (SortDescription description in e.NewItems)
+                string propertyName = GetPropertyName(headerClicked.Column);
+                if (!string.IsNullOrEmpty(propertyName))
+                {
+                    ListView listView = GetAncestor<ListView>(headerClicked);
+                    if (listView != null)
                     {
-                        if (description.PropertyName == SortPropertyName)
+                        ICommand command = GetCommand(listView);
+                        if (command != null)
                         {
-                            SortDirection = description.Direction;
+                            if (command.CanExecute(propertyName))
+                            {
+                                command.Execute(propertyName);
+                            }
+                        }
+                        else if (GetAutoSort(listView))
+                        {
+                            ApplySort(listView.Items, propertyName, listView, headerClicked);
                         }
                     }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (SortDescription description in e.OldItems)
-                    {
-                        if (description.PropertyName == SortPropertyName)
-                        {
-                            SortDirection = null;
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    SortDirection = null;
-                    break;
+                }
             }
         }
 
-        /// <summary>
-        /// Sort the collection when the ColumnViewHeader is clicked.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SortableGridViewColumnHeader_Click(object sender, RoutedEventArgs e)
+        private static T GetAncestor<T>(DependencyObject reference) where T : DependencyObject
         {
-            if (GetAncestor<ListView>(this) is ListView listView &&
-                !string.IsNullOrWhiteSpace(SortPropertyName))
-            {
-                // Enable multi-sorting if Shift + Click
-                bool append = Keyboard.Modifiers == ModifierKeys.Shift;
-                Sort(listView.Items, append);
-            }
-        }
-
-        /// <summary>
-        /// Force SideWE Cursor when the thumb is dragging.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Thumb_DragStarted(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.SizeWE;
-        }
-
-        /// <summary>
-        /// Remove forced SizeWE Cursor when thumb dragging complete.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Thumb_DragCompleted(object sender, RoutedEventArgs e)
-        {
-            Mouse.OverrideCursor = null;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        private static T GetAncestor<T>(DependencyObject obj) where T : DependencyObject
-        {
-            if (obj == null)
-            {
-                return null;
-            }
-
-            DependencyObject parent = VisualTreeHelper.GetParent(obj);
-
-            while (!(parent == null || parent is T))
+            DependencyObject parent = VisualTreeHelper.GetParent(reference);
+            while (!(parent is T))
             {
                 parent = VisualTreeHelper.GetParent(parent);
             }
 
-            return (T)parent ?? null;
+            if (parent != null)
+            {
+                return (T)parent;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        private static void ApplySort(ICollectionView view, string propertyName, ListView listView, GridViewColumnHeader sortedColumnHeader)
         {
-            int children = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < children; i++)
+            ListSortDirection direction = ListSortDirection.Ascending;
+            if (view.SortDescriptions.Count > 0)
             {
-                var child = VisualTreeHelper.GetChild(parent, i);
-
-                if (child is T)
+                SortDescription currentSort = view.SortDescriptions[0];
+                if (currentSort.PropertyName == propertyName)
                 {
-                    yield return (T)child;
+                    if (currentSort.Direction == ListSortDirection.Ascending)
+                        direction = ListSortDirection.Descending;
+                    else
+                        direction = ListSortDirection.Ascending;
                 }
 
-                foreach (var c in FindVisualChildren<T>(child))
+                view.SortDescriptions.Clear();
+
+                GridViewColumnHeader currentSortedColumnHeader = GetSortedColumnHeader(listView);
+                if (currentSortedColumnHeader != null)
                 {
-                    yield return c;
+                    RemoveSortGlyph(currentSortedColumnHeader);
+                }
+            }
+            if (!string.IsNullOrEmpty(propertyName))
+            {
+                view.SortDescriptions.Add(new SortDescription(propertyName, direction));
+                if (GetShowSortGlyph(listView))
+                {
+                    AddSortGlyph(
+                        sortedColumnHeader,
+                        direction,
+                        direction == ListSortDirection.Ascending ? GetSortGlyphAscending(listView) : GetSortGlyphDescending(listView));
+                }
+
+                SetSortedColumnHeader(listView, sortedColumnHeader);
+            }
+        }
+
+        private static void AddSortGlyph(GridViewColumnHeader columnHeader, ListSortDirection direction, ImageSource sortGlyph)
+        {
+            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(columnHeader);
+            adornerLayer.Add(
+                new SortGlyphAdorner(
+                    columnHeader,
+                    direction,
+                    sortGlyph
+                    ));
+        }
+
+        private static void RemoveSortGlyph(GridViewColumnHeader columnHeader)
+        {
+            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(columnHeader);
+            Adorner[] adorners = adornerLayer.GetAdorners(columnHeader);
+            if (adorners != null)
+            {
+                foreach (Adorner adorner in adorners)
+                {
+                    if (adorner is SortGlyphAdorner)
+                        adornerLayer.Remove(adorner);
+                }
+            }
+        }
+
+
+        #region SortGlyphAdorner nested class
+
+        private class SortGlyphAdorner : Adorner
+        {
+            private GridViewColumnHeader _columnHeader;
+            private ListSortDirection _direction;
+            private ImageSource _sortGlyph;
+
+            public SortGlyphAdorner(GridViewColumnHeader columnHeader, ListSortDirection direction, ImageSource sortGlyph)
+                : base(columnHeader)
+            {
+                _columnHeader = columnHeader;
+                _direction = direction;
+                _sortGlyph = sortGlyph;
+            }
+
+            private Geometry GetDefaultGlyph()
+            {
+                double x1 = _columnHeader.ActualWidth - 13;
+                double x2 = x1 + 10;
+                double x3 = x1 + 5;
+                double y1 = _columnHeader.ActualHeight / 2 - 3;
+                double y2 = y1 + 5;
+
+                if (_direction == ListSortDirection.Ascending)
+                {
+                    double tmp = y1;
+                    y1 = y2;
+                    y2 = tmp;
+                }
+
+                PathSegmentCollection pathSegmentCollection = new PathSegmentCollection();
+                pathSegmentCollection.Add(new LineSegment(new Point(x2, y1), true));
+                pathSegmentCollection.Add(new LineSegment(new Point(x3, y2), true));
+
+                PathFigure pathFigure = new PathFigure(
+                    new Point(x1, y1),
+                    pathSegmentCollection,
+                    true);
+
+                PathFigureCollection pathFigureCollection = new PathFigureCollection();
+                pathFigureCollection.Add(pathFigure);
+
+                PathGeometry pathGeometry = new PathGeometry(pathFigureCollection);
+                return pathGeometry;
+            }
+
+            protected override void OnRender(DrawingContext drawingContext)
+            {
+                base.OnRender(drawingContext);
+
+                if (_sortGlyph != null)
+                {
+                    double x = _columnHeader.ActualWidth - 13;
+                    double y = _columnHeader.ActualHeight / 2 - 5;
+                    Rect rect = new Rect(x, y, 10, 10);
+                    drawingContext.DrawImage(_sortGlyph, rect);
+                }
+                else
+                {
+                    drawingContext.DrawGeometry(Brushes.LightGray, new Pen(Brushes.Gray, 1.0), GetDefaultGlyph());
                 }
             }
         }
