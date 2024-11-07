@@ -19,6 +19,7 @@
     {
         public MainWindowVM()
         {
+            this.InitCommands();
             this.LoadData();
         }
 
@@ -39,7 +40,9 @@
         public override void InitCommands()
         {
             this.CmdAgg.AddOrSetCommand("WindowCloseCommand", new RelayCommand(p1 => this.WindowCloseHandler(), p2 => true));
+            this.CmdAgg.AddOrSetCommand("SelectedRowCommand", new RelayCommand(p1 => this.SelectedRowClick(p1), p2 => true));
         }
+
         public override void OnViewIsClosing(CancelEventArgs eventArgs)
         {
             if (this.CanSave == false)
@@ -64,6 +67,13 @@
                 currentWindow.Close();
             }
         }
+
+        private void SelectedRowClick(object selectedRow)
+        {
+            DialogResultsEx msg = MessageBoxEx.Show("ListView Demo", "Doppelklick auf gewälten Datensatz", $"{string.Join(';', ((DataRow)selectedRow).ItemArray)}", MessageBoxButton.OK, InstructionIcon.Information, DialogResultsEx.No);
+
+        }
+
 
         private void LoadData()
         {

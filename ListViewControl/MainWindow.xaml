@@ -15,12 +15,12 @@
 
     <Grid>
         <!--#region ListView Definition-->
-        <ctrl:ListViewEx ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}">
+        <ctrl:ListViewEx ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}" SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
             <ListView.View>
                 <GridView AllowsColumnReorder="True">
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=[TextA]}" Width="150">
+                    <GridViewColumn Width="150" DisplayMemberBinding="{Binding Path=[TextA]}">
                         <GridViewColumn.Header>
-                            <ctrl:GridViewColumnHeaderEx Tag="TextA" Content="TextA" /> 
+                            <ctrl:GridViewColumnHeaderEx Content="TextA" Tag="TextA" />
                         </GridViewColumn.Header>
                     </GridViewColumn>
                 </GridView>
