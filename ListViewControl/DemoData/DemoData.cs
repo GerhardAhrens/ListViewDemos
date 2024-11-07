@@ -52,6 +52,39 @@
             return this.demoModelsDR;
         }
 
+        public List<DemoModel> BuildData()
+        {
+
+            List<DemoModel> liste = new List<DemoModel>();
+            for (int i = 0; i < COUNT; i++)
+            {
+                DemoModel model = new DemoModel();
+                using (RandomDataContent rdn = new RandomDataContent())
+                {
+                    model.Zahlen = rdn.NumbersInt(1, COUNT);
+                    model.Datum = rdn.Dates(new DateTime(2024, 1, 1), new DateTime(2024, 12, 31));
+                    model.TextA = rdn.AlphabetAndNumeric(10);
+                    model.TextB = rdn.AlphabetAndNumeric(20);
+                    model.BoolValue = rdn.Boolean();
+                    model.IsSelected = false;
+                    if (model.Zahlen > 3000)
+                    {
+                        model.SymbolColor = "Red";
+                        model.Symbol = "M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z";
+                    }
+                    else
+                    {
+                        model.SymbolColor = "Green";
+                        model.Symbol = "M16,8H8V16H16V8Z";
+                    }
+                }
+
+                liste.Add(model);
+            }
+
+            return liste;
+        }
+
         private static DataRow ToDataRow(object from)
         {
 
