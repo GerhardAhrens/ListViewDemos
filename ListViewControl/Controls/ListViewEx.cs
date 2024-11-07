@@ -20,6 +20,15 @@
             set { SetValue(SelectedRowCommandProperty, value); }
         }
 
+        public static readonly DependencyProperty SelectionChangedCommandProperty =
+    DependencyProperty.Register(nameof(SelectionChangedCommand), typeof(ICommand), typeof(ListViewEx), new PropertyMetadata(null));
+
+        public ICommand SelectionChangedCommand
+        {
+            get { return (ICommand)GetValue(SelectionChangedCommandProperty); }
+            set { SetValue(SelectionChangedCommandProperty, value); }
+        }
+
         static ListViewEx()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ListViewEx),
@@ -31,6 +40,7 @@
             this.Loaded += this.OnLoaded;
             this.MouseDoubleClick += this.OnMouseDoubleClick;
             this.KeyDown += this.OnKeyDown;
+            this.SelectionChanged += this.OnSelectionChanged;
         }
 
         ~ListViewEx()
@@ -60,6 +70,14 @@
             if (this.SelectedRowCommand != null && this.SelectedRowCommand.CanExecute(this.SelectedItem) == true)
             {
                 this.SelectedRowCommand.Execute(this.SelectedItem);
+            }
+        }
+
+        private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (this.SelectionChangedCommand != null && this.SelectionChangedCommand.CanExecute(this.SelectedItem) == true)
+            {
+                this.SelectionChangedCommand.Execute(this.SelectedItem);
             }
         }
 

@@ -5,6 +5,7 @@
     xmlns:ctrl="clr-namespace:ListViewControl.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ListViewControl"
+    xmlns:localConverter="clr-namespace:ListViewControl.XAMLConverter"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:wpfLib="clr-namespace:EasyPrototypingNET.WPF;assembly=EasyPrototypingNET"
     Title="MainWindow"
@@ -14,21 +15,34 @@
     mc:Ignorable="d">
 
     <Window.Resources>
-        <Style x:Key="lvStyle" TargetType="{x:Type ListView}">
-            <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True" />
-            <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
-            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="True" />
-        </Style>
+        <localConverter:SymbolConverter x:Key="SymbolConverter" />
     </Window.Resources>
 
     <Grid>
         <!--#region ListView Definition-->
         <ctrl:ListViewEx
+            x:Name="lvwMain"
             ctrl:ListViewSort.AutoSort="True"
             ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChangedCommand="{Binding Path=CmdAgg[SelectionChangedCommand]}"
             SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
             <ListView.View>
                 <GridView AllowsColumnReorder="True">
+
+                    <GridViewColumn Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border>
+                                    <Path
+                                        VerticalAlignment="Center"
+                                        Data="{Binding Path=[Symbol], Converter={StaticResource ResourceKey=SymbolConverter}, ConverterParameter={x:Reference Name=lvwMain}}"
+                                        Fill="{Binding Path=[SymbolColor]}"
+                                        Stretch="Uniform" />
+                                </Border>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
                     <GridViewColumn
                         Width="150"
                         ctrl:ListViewSort.PropertyName="[TextA]"
@@ -36,7 +50,29 @@
                         <ctrl:GridViewColumnHeaderEx
                             Height="30"
                             HorizontalContentAlignment="Left"
+                            Background="LightGreen"
                             Content="TextA" />
+                    </GridViewColumn>
+
+                    <GridViewColumn
+                        x:Name="colZahlen"
+                        Width="100"
+                        ctrl:ListViewSort.PropertyName="[Zahlen]">
+                        <ctrl:GridViewColumnHeaderEx
+                            Height="30"
+                            HorizontalContentAlignment="Right"
+                            Background="Azure"
+                            Content="Zahlen" />
+
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    x:Name="tbZahlen"
+                                    HorizontalAlignment="Right"
+                                    FontWeight="Normal"
+                                    Text="{Binding Path=[Zahlen]}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                 </GridView>
             </ListView.View>
