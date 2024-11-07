@@ -12,7 +12,7 @@
 
     internal class DemoData
     {
-        private const int COUNT = 10_000;
+        private const int COUNT = 1_000;
         private readonly List<DataRow> demoModelsDR = null;
 
         public DemoData()

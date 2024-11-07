@@ -13,6 +13,14 @@
     wpfLib:ActionDialogClosing.RaiseClosingHandler="True"
     mc:Ignorable="d">
 
+    <Window.Resources>
+        <Style x:Key="lvStyle" TargetType="{x:Type ListView}">
+            <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="True" />
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <!--#region ListView Definition-->
         <ctrl:ListViewEx ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}" SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
@@ -20,7 +28,10 @@
                 <GridView AllowsColumnReorder="True">
                     <GridViewColumn Width="150" DisplayMemberBinding="{Binding Path=[TextA]}">
                         <GridViewColumn.Header>
-                            <ctrl:GridViewColumnHeaderEx Content="TextA" Tag="TextA" />
+                            <ctrl:SortableGridViewColumnHeader
+                                Content="TextA"
+                                SortPropertyName="TextA"
+                                Tag="TextA" />
                         </GridViewColumn.Header>
                     </GridViewColumn>
                 </GridView>
