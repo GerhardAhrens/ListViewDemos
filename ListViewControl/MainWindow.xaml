@@ -23,9 +23,10 @@
         <ctrl:ListViewEx
             x:Name="lvwMain"
             ctrl:ListViewSort.AutoSort="True"
+            ItemContainerStyle="{StaticResource ResourceKey=lvwItemContainerStyle}"
             ItemsSource="{Binding Path=DialogDataView, UpdateSourceTrigger=PropertyChanged}"
-            SelectionChangedCommand="{Binding Path=CmdAgg[SelectionChangedCommand]}"
-            SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}">
+            SelectedRowCommand="{Binding Path=CmdAgg[SelectedRowCommand]}"
+            SelectionChangedCommand="{Binding Path=CmdAgg[SelectionChangedCommand]}">
             <ListView.View>
                 <GridView AllowsColumnReorder="True">
 
