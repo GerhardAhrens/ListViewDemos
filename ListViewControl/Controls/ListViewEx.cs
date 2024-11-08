@@ -1,6 +1,5 @@
 ﻿namespace ListViewControl.Controls
 {
-    using System.Collections.Specialized;
     using System.ComponentModel;
     using System.Windows;
     using System.Windows.Controls;
@@ -54,6 +53,7 @@
             this.Loaded -= this.OnLoaded;
             this.MouseDoubleClick -= this.OnMouseDoubleClick;
             this.KeyDown -= this.OnKeyDown;
+            this.SelectionChanged -= this.OnSelectionChanged;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -319,9 +319,13 @@
                 if (currentSort.PropertyName == propertyName)
                 {
                     if (currentSort.Direction == ListSortDirection.Ascending)
+                    {
                         direction = ListSortDirection.Descending;
+                    }
                     else
+                    {
                         direction = ListSortDirection.Ascending;
+                    }
                 }
 
                 view.SortDescriptions.Clear();
@@ -337,10 +341,7 @@
                 view.SortDescriptions.Add(new SortDescription(propertyName, direction));
                 if (GetShowSortGlyph(listView))
                 {
-                    AddSortGlyph(
-                        sortedColumnHeader,
-                        direction,
-                        direction == ListSortDirection.Ascending ? GetSortGlyphAscending(listView) : GetSortGlyphDescending(listView));
+                    AddSortGlyph(sortedColumnHeader, direction, direction == ListSortDirection.Ascending ? GetSortGlyphAscending(listView) : GetSortGlyphDescending(listView));
                 }
 
                 SetSortedColumnHeader(listView, sortedColumnHeader);
@@ -350,12 +351,7 @@
         private static void AddSortGlyph(GridViewColumnHeader columnHeader, ListSortDirection direction, ImageSource sortGlyph)
         {
             AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(columnHeader);
-            adornerLayer.Add(
-                new SortGlyphAdorner(
-                    columnHeader,
-                    direction,
-                    sortGlyph
-                    ));
+            adornerLayer.Add(new SortGlyphAdorner(columnHeader, direction, sortGlyph));
         }
 
         private static void RemoveSortGlyph(GridViewColumnHeader columnHeader)
@@ -367,7 +363,9 @@
                 foreach (Adorner adorner in adorners)
                 {
                     if (adorner is SortGlyphAdorner)
+                    {
                         adornerLayer.Remove(adorner);
+                    }
                 }
             }
         }
