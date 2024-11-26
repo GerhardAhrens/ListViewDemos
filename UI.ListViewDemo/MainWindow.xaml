@@ -6,12 +6,17 @@
     xmlns:diagnostics="clr-namespace:System.Diagnostics;assembly=WindowsBase"
     xmlns:local="clr-namespace:UI.ListViewDemo"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     Title="MainWindow"
     Width="800"
     Height="450"
     mc:Ignorable="d">
 
     <Window.Resources>
+        <local:IsGreaterOrEqualThanConverter x:Key="IsEqualOrGreaterThanConverter" />
+        <local:ColumnWidthConverter x:Key="ColumnWidthConverter" />
+
+        <sys:Double x:Key="Dec1">41000</sys:Double>
 
         <DataTemplate x:Key="tileTemplate">
             <StackPanel Width="90" Height="100">
@@ -75,7 +80,7 @@
             </DockPanel>
         </DataTemplate>
 
-        <GridView x:Key="gridView">
+        <GridView x:Key="gridView" AllowsColumnReorder="True">
             <GridViewColumn Width="50" Header="Symbol">
                 <GridViewColumn.CellTemplate>
                     <DataTemplate>
@@ -89,11 +94,43 @@
                     </DataTemplate>
                 </GridViewColumn.CellTemplate>
             </GridViewColumn>
-            <GridViewColumn DisplayMemberBinding="{Binding Path=[Id]}" Header="Id" />
-            <GridViewColumn DisplayMemberBinding="{Binding Path=[Name]}" Header="Name" />
-            <GridViewColumn DisplayMemberBinding="{Binding Path=[Developer]}" Header="Developer" />
-            <GridViewColumn DisplayMemberBinding="{Binding Path=[Gehalt]}" Header="Gehalt" />
-            <GridViewColumn DisplayMemberBinding="{Binding Path=[Status]}" Header="Status" />
+
+            <GridViewColumn
+                Width="50"
+                DisplayMemberBinding="{Binding Path=[Id]}"
+                Header="Id" />
+
+            <GridViewColumn
+                Width="150"
+                DisplayMemberBinding="{Binding Path=[Name]}"
+                Header="Name" />
+
+            <GridViewColumn
+                Width="100"
+                DisplayMemberBinding="{Binding Path=[Developer]}"
+                Header="Developer" />
+
+            <GridViewColumn Width="{Binding Path=IsChecked, ElementName=ChkLoc, Converter={StaticResource ResourceKey=ColumnWidthConverter}, ConverterParameter=100}" HeaderContainerStyle="{StaticResource ResourceKey=lvwHeaderRight}">
+                <GridViewColumn.Header>
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        Text="Gehalt"
+                        TextAlignment="Right" />
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            Text="{Binding Path=[Gehalt], StringFormat=C2}"
+                            TextAlignment="Right" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn
+                Width="{Binding Path=IsChecked, ElementName=ChkCont, Converter={StaticResource ResourceKey=ColumnWidthConverter}, ConverterParameter=50}"
+                DisplayMemberBinding="{Binding Path=[Status]}"
+                Header="Status" />
         </GridView>
 
         <local:PlainView
@@ -109,27 +146,76 @@
     </Window.Resources>
 
     <Grid>
-        <ListView
-            Name="lv"
-            Background="LightBlue"
-            FontSize="12"
-            ItemsSource="{Binding Path=ListViewSource, Mode=OneWay}"
-            ScrollViewer.IsDeferredScrollingEnabled="False"
-            Style="{StaticResource ResourceKey=lvwMainStyle}">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Click="SwitchViewMenu" Header="GridView" />
-                    <MenuItem Click="SwitchViewMenu" Header="TileView" />
-                    <MenuItem Click="SwitchViewMenu" Header="IconView" />
-                </ContextMenu>
-            </ListView.ContextMenu>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Margin="10,10,0,10" Orientation="Horizontal">
+                <CheckBox
+                    x:Name="ChkLoc"
+                    Margin="20,0"
+                    Content="Show location columns" />
+                <CheckBox
+                    x:Name="ChkCont"
+                    Margin="20,0"
+                    Content="Show contact columns" />
+            </StackPanel>
 
-            <ListView.ItemContainerStyle>
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="HorizontalContentAlignment" Value="Left" />
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>
-            </ListView.ItemContainerStyle>
-        </ListView>
+            <ListView
+                Name="lv"
+                Height="350"
+                Background="LightBlue"
+                FontSize="12"
+                ItemsSource="{Binding Path=ListViewSource, Mode=OneWay}"
+                ScrollViewer.IsDeferredScrollingEnabled="False"
+                SelectiveScrollingGrid.SelectiveScrollingOrientation="Both"
+                Style="{StaticResource ResourceKey=lvwMainStyle}">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Click="SwitchViewMenu" Header="GridView" />
+                        <MenuItem Click="SwitchViewMenu" Header="TileView" />
+                        <MenuItem Click="SwitchViewMenu" Header="IconView" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+
+                <ListView.Resources>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="BorderBrush" Value="Gray" />
+                        <Setter Property="BorderThickness" Value="1,0.5,1,0.5" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VirtualizingPanel.IsContainerVirtualizable" Value="True" />
+                        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+                        <Setter Property="Margin" Value="2,0,0,0" />
+                        <Setter Property="Padding" Value="0,2" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <Border
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        <local:GridViewRowPresenterWithGridLines Margin="{TemplateBinding Padding}" Columns="{TemplateBinding GridView.ColumnCollection}" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=[Summe], Converter={StaticResource ResourceKey=IsEqualOrGreaterThanConverter}, ConverterParameter={StaticResource ResourceKey=Dec1}}" Value="True">
+                                <Setter Property="FontWeight" Value="Bold" />
+                                <Setter Property="Foreground" Value="Green" />
+                            </DataTrigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+                                <Setter Property="FontWeight" Value="Normal" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.Resources>
+            </ListView>
+        </StackPanel>
     </Grid>
 </Window>

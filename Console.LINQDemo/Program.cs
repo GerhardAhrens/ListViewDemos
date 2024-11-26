@@ -99,11 +99,12 @@ namespace Console.LINQDemo
 
             IEnumerable<DataRow> liste = dt.AsEnumerable();
             int countIE1 = liste.Count();
-            bool anyTrue = liste.Any(c => c.Field<string>("Developer") == "Access");
+            bool anyTrue1 = liste.Any();
+            bool anyTrue2 = liste.Any(c => c.Field<string>("Developer") == "Access");
             int countIE0 = liste.Count(c => c.Field<string>("Developer") == "Access");
             int countIE2 = liste.Count(c => c.Field<string>("Developer") == "WPF");
 
-            IEnumerable<DataRow> resultWhere = liste.Where(c => c.Field<string>("Developer") == "WPF");
+            IEnumerable<DataRow> resultWhere = liste.Where(c => NewMethod(c));
 
             DataRow dr1 = liste.FirstOrDefault();
             DataRow dr2 = liste.FirstOrDefault(c => c.Field<string>("Developer") == "WPF");
@@ -118,6 +119,11 @@ namespace Console.LINQDemo
             IEnumerable<string> resultSelect = liste.Select(c => c.Field<string>("Name")).Distinct();
 
             Console.ReadKey();
+        }
+
+        private static bool NewMethod(DataRow c)
+        {
+            return (c.Field<string>("Developer") == "WPF");
         }
     }
 }

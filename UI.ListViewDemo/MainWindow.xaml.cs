@@ -3,9 +3,11 @@
     using System.ComponentModel;
     using System.Data;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Runtime.CompilerServices;
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Data;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -60,6 +62,8 @@
             {
                 lv.View = lv.FindResource("iconView") as ViewBase;
             }
+
+            this.lv.UpdateLayout();
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
@@ -72,6 +76,43 @@
 
             var e = new PropertyChangedEventArgs(propertyName);
             handler(this, e);
+        }
+    }
+
+    public class IsGreaterOrEqualThanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            IComparable v = value as IComparable;
+            IComparable p = parameter as IComparable;
+
+            if (v == null || p == null)
+            {
+                throw new FormatException("to use this converter, value and parameter shall inherit from IComparable");
+            }
+
+            return (v.CompareTo(p) >= 0);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ColumnWidthConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter,CultureInfo culture)
+        {
+            var isVisible = (bool)value;
+            var width = double.Parse(parameter as string);
+            return isVisible ? width : 0.0;
+        }
+
+
+        public object ConvertBack(object value, Type targetType, object parameter,CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -50,11 +50,11 @@
             items.Add(new ViewItem { Id = "5", Name = "Kunal", Developer = "Silverlight", Gehalt = 26000.20f, Status = false, SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "6", Name = "Hanselman", Developer = "ASP.NET", Gehalt = 78000.20f, Status = true , SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "7", Name = "Peter", Developer = "WPF", Gehalt = 37000.20f, Status = true , SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
-            items.Add(new ViewItem { Id = "8", Name = "Tim", Developer = "Silverlight", Gehalt = 45000.20f, Status = false, SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
+            items.Add(new ViewItem { Id = "8", Name = "Tim", Developer = "Silverlight", Gehalt = 0f, Status = false, SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "9", Name = "John", Developer = "ASP.NET", Gehalt = 70000.20f, Status = true , SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "10", Name = "Jamal", Developer = "ASP.NET", Gehalt = 40000.20f, Status = false , SymbolColor = "Green", Symbol = "M16,8H8V16H16V8Z" });
-            items.Add(new ViewItem { Id = "11", Name = "Gerhard", Developer = "C#", Gehalt = 40000.20f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
-            items.Add(new ViewItem { Id = "12", Name = "Gerhard", Developer = "WPF", Gehalt = 40000.20f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
+            items.Add(new ViewItem { Id = "11", Name = "Gerhard", Developer = "C#", Gehalt = 40000.00f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
+            items.Add(new ViewItem { Id = "12", Name = "Gerhard", Developer = "WPF", Gehalt = 40000.00f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "13", Name = "Peter", Developer = "C#", Gehalt = 37000.20f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "14", Name = "Peter", Developer = "ASP.Net", Gehalt = 37000.20f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
             items.Add(new ViewItem { Id = "15", Name = "Gerhard", Developer = "Fortran", Gehalt = 40000.20f, Status = true , SymbolColor = "Green" , Symbol = "M16,8H8V16H16V8Z" });
@@ -106,6 +106,8 @@
         public bool Status { get; set; }
         public string Symbol { get; set; }
         public string SymbolColor { get; set; }
+
+        public double Summe { get { return this.Gehalt; } }
     }
 
     public class ViewItemExport

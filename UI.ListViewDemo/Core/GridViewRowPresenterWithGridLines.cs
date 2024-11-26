@@ -32,7 +32,7 @@ namespace UI.ListViewDemo
         static GridViewRowPresenterWithGridLines()
         {
             DefaultSeparatorStyle = new Style(typeof(Rectangle));
-            DefaultSeparatorStyle.Setters.Add(new Setter(Shape.FillProperty, SystemColors.ControlLightBrush));
+            DefaultSeparatorStyle.Setters.Add(new Setter(Shape.FillProperty, SystemColors.ActiveBorderBrush));
             SeparatorStyleProperty = DependencyProperty.Register("SeparatorStyle", typeof(Style), typeof(GridViewRowPresenterWithGridLines),
                                                                     new UIPropertyMetadata(DefaultSeparatorStyle, SeparatorStyleChanged));
         }
@@ -56,16 +56,19 @@ namespace UI.ListViewDemo
         protected override Size ArrangeOverride(Size arrangeSize)
         {
             var size = base.ArrangeOverride(arrangeSize);
-            var children = this.Children.ToList();
-            this.EnsureLines(children.Count);
+            List<FrameworkElement> children = this.Children.ToList();
+            this.EnsureLines(children);
             for (var i = 0; i < this.lines.Count; i++)
             {
                 var child = children[i];
-                var x = child.TransformToAncestor(this).Transform(new Point(child.ActualWidth, 0)).X + child.Margin.Right;
-                var rect = new Rect(x, -Margin.Top, 1, size.Height + Margin.Top + Margin.Bottom);
-                var line = this.lines[i];
-                line.Measure(rect.Size);
-                line.Arrange(rect);
+                if (child.ActualWidth > 0)
+                {
+                    var x = child.TransformToAncestor(this).Transform(new Point(child.ActualWidth, 0)).X + child.Margin.Right;
+                    var rect = new Rect(x, -Margin.Top, 1, size.Height + Margin.Top + Margin.Bottom);
+                    var line = this.lines[i];
+                    line.Measure(rect.Size);
+                    line.Arrange(rect);
+                }
             }
 
             return size;
@@ -87,13 +90,13 @@ namespace UI.ListViewDemo
             }
         }
 
-        private void EnsureLines(int count)
+        private void EnsureLines(List<FrameworkElement> child)
         {
-            count = count - this.lines.Count;
+            int count = child.Count - this.lines.Count;
             for (var i = 0; i < count; i++)
             {
                 var line = (FrameworkElement)Activator.CreateInstance(this.SeparatorStyle.TargetType);
-                line = new Rectangle { Fill = Brushes.LightGray };
+                line = new Rectangle { Fill = Brushes.Gray };
                 line.Style = this.SeparatorStyle;
                 this.AddVisualChild(line);
                 this.lines.Add(line);

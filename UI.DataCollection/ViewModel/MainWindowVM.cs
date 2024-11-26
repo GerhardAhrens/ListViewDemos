@@ -87,6 +87,7 @@
 
             this.CmdAgg.AddOrSetCommand("ClearFilterCommand", new RelayCommand(p1 => this.ClearFilterHandler(), p2 => this.CanClearFilterHandler()));
             this.CmdAgg.AddOrSetCommand("EditEntryCommand", new RelayCommand(p1 => this.EditEntryHandler(), p2 => this.CanEditEntryHandler()));
+            this.CmdAgg.AddOrSetCommand("EditEntryCommand", new RelayCommand(p1 => this.EditEntryHandler(), p2 => this.CanEditEntryHandler()));
             this.CmdAgg.AddOrSetCommand("SelectionChangedCommand", new RelayCommand(p1 => this.SelectionChangedHandler(p1), p2 => true));
             this.CmdAgg.AddOrSetCommand("CheckBoxCheckedCommand", new RelayCommand(p1 => this.CheckBoxCheckedHandler(p1), p2 => true));
             this.CmdAgg.AddOrSetCommand("AllRowsMarked", new RelayCommand(p1 => this.ShowAllItemsChecked(null), p2 => true));
@@ -231,7 +232,7 @@
                 {
                 }
 
-                this.SelectedRowHeader = $"Ausgewählt: {itemsCollection.Count()} von {this.MaxRowCount.ToString("N0")}";
+                this.SelectedRowHeader = $"Ausgewählt: {itemsCollection.Count().ToString("N0")} von {this.MaxRowCount.ToString("N0")}";
             }
         }
 
@@ -259,7 +260,7 @@
             this.DialogDataView.Refresh();
             this.SelectedCheckBoxRows = this.DialogDataView.OfType<DataRow>().Count(c => c.GetAs<bool>("IsSelected") == true);
             this.SelectedCheckBoxHeader = $"{this.SelectedCheckBoxRows}";
-            this.SelectedRowHeader = $"Ausgewählt: {this.SelectedCheckBoxRows} von {this.MaxRowCount.ToString("N0")}";
+            this.SelectedRowHeader = $"Ausgewählt: {this.SelectedCheckBoxRows.ToString("N0")} von {this.MaxRowCount.ToString("N0")}";
 
         }
 
@@ -307,7 +308,7 @@
                 }
 
                 this.SelectedCheckBoxHeader = $"{selectedRows}";
-                this.SelectedRowHeader = $"Ausgewählt: {selectedRows} von {this.MaxRowCount.ToString("N0")}";
+                this.SelectedRowHeader = $"Ausgewählt: {selectedRows.ToString("N0")} von {this.MaxRowCount.ToString("N0")}";
             }
         }
 
