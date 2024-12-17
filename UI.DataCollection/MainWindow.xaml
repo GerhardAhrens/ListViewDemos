@@ -121,19 +121,19 @@
             </ListView.ContextMenu>
 
             <ListView.View>
-                <GridView
-                    AllowsColumnReorder="True"
-                    ColumnHeaderToolTip="Spaltenkopf">
+                <GridView AllowsColumnReorder="True" ColumnHeaderToolTip="Spaltenkopf">
                     <!--  Add a ContextMenu to GridView Header  -->
                     <GridView.ColumnHeaderContextMenu>
                         <ContextMenu>
                             <MenuItem
                                 x:Name="ctxSortAbsteigend"
-                                Click="ctxSortAbsteigend_Click"
+                                Command="{Binding Path=CmdAgg[CtxSortAbsteigend]}"
+                                CommandParameter="AB"
                                 Header="Absteigend" />
                             <MenuItem
                                 x:Name="ctxSortAufsteigend"
-                                Click="ctxSortAufsteigend_Click"
+                                Command="{Binding Path=CmdAgg[CtxSortAufsteigend]}"
+                                CommandParameter="AUF"
                                 Header="Aufsteigend" />
                         </ContextMenu>
                     </GridView.ColumnHeaderContextMenu>

@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using System.Data;
     using System.IO;
     using System.Reflection;
     using System.Runtime.CompilerServices;
@@ -77,11 +78,9 @@
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
 
-            /*
-            DataTable dt = this.ListviewSource.ToDataTable();
+            DataTable dt = this.ListViewSource.ToDataTable<ViewItem>();
             List<ViewItem> aa = new List<ViewItem>();
             IEnumerable<ViewItemExport> ignor = aa.Select(s => new ViewItemExport {Id = s.Id, Name = s.Name });
-            */
             this.lvItems.Focus();
         }
 

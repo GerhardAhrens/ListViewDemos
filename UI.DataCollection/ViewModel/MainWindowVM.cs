@@ -8,7 +8,6 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Windows;
-    using System.Windows.Controls;
     using System.Windows.Data;
 
     using EasyPrototypingNET.BaseClass;
@@ -92,6 +91,8 @@
             this.CmdAgg.AddOrSetCommand("CheckBoxCheckedCommand", new RelayCommand(p1 => this.CheckBoxCheckedHandler(p1), p2 => true));
             this.CmdAgg.AddOrSetCommand("AllRowsMarked", new RelayCommand(p1 => this.ShowAllItemsChecked(null), p2 => true));
             this.CmdAgg.AddOrSetCommand("ContextMenuCommand", new RelayCommand(p1 => this.ContextMenuHandler(p1), p2 => true));
+            this.CmdAgg.AddOrSetCommand("CtxSortAbsteigend", new RelayCommand(p1 => this.ContextColumnHandler(p1), p2 => true));
+            this.CmdAgg.AddOrSetCommand("CtxSortAufsteigend", new RelayCommand(p1 => this.ContextColumnHandler(p1), p2 => true));
         }
 
         public override void OnViewIsClosing(CancelEventArgs eventArgs)
@@ -325,10 +326,10 @@
                 DialogResultsEx msg = MessageBoxEx.Show("ListView Demo", "Contextmenü-B auf gewählten Datensatz", $"{string.Join(';', this.CurrentSelectedItem.ItemArray)}", MessageBoxButton.OK, InstructionIcon.Information, DialogResultsEx.No);
             }
         }
-    }
 
-    public class MyListView : ListView
-    {
-
+        private void ContextColumnHandler(object auswahl)
+        {
+            DialogResultsEx msg = MessageBoxEx.Show("ListView Demo", "Click auf Column Header", $"Auswahl: {auswahl}", MessageBoxButton.OK, InstructionIcon.Information, DialogResultsEx.No);
+        }
     }
 }
